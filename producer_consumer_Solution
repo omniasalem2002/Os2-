@@ -1,0 +1,81 @@
+package javaapplication2;
+
+
+import java.util.LinkedList;
+
+public class producer_consumer_Solution {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        final producer_consumer pro_con = new producer_consumer();
+        for (int i = 0; i <= 3; i++) {
+            Thread t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        pro_con.produce();
+                    } catch (InterruptedException e) {
+                        e.printSruntackTrace();
+                    }
+                }
+            }
+            );
+            t1.start();
+             
+        }
+        for (int i = 0; i <= 3; i++) {
+            Thread t2 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        pro_con.consume();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            );
+            t2.start();
+            
+        }
+        
+        
+    }
+///////////////////////////////
+
+    public static class producer_consumer {
+
+        LinkedList<Integer> list = new LinkedList<>();
+        int capacity = 4;
+        ////////////////////////////this is shared data 🙄
+
+        public void produce() throws InterruptedException {
+            int value = 0;
+            while (true) {
+                synchronized (this) {
+                    while (list.size() == capacity) {
+                        wait();
+                    }
+                    System.out.println("Producer  produced=" + value);
+                    list.add(value++);
+                    notify();
+                    Thread.sleep(500);
+                }
+            }
+        }
+
+        public void consume() throws InterruptedException {
+            while (true) {
+                synchronized (this) {
+                    while (list.isEmpty()) {
+                        wait();
+                    }
+                    int val = list.removeFirst();
+                    System.out.println("Consumer consumed=" + val);
+                    notify();
+                   Thread.sleep(500);
+                }
+            }
+        }
+    }
+}
