@@ -15,6 +15,7 @@ public class producer_consumer_Solution {
                     try {
                         pro_con.produce();
                     } catch (InterruptedException e) {
+                       System.out.println("Interrupted Exception @ Producer Code");
                         e.printSruntackTrace();
                     }
                 }
@@ -30,6 +31,7 @@ public class producer_consumer_Solution {
                     try {
                         pro_con.consume();
                     } catch (InterruptedException e) {
+                       System.out.println("Interrupted Exception @ Consumer Code");
                         e.printStackTrace();
                     }
                 }
@@ -54,12 +56,14 @@ public class producer_consumer_Solution {
             while (true) {
                 synchronized (this) {
                     while (list.size() == capacity) {
+                    System.out.print("list is full, \n\t");
+                    System.out.println(Thread.currentThread().getName() + " is waiting, size: " + list.size());
                         wait();
                     }
                     System.out.println("Producer  produced=" + value);
                     list.add(value++);
                     notify();
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 }
             }
         }
@@ -68,12 +72,14 @@ public class producer_consumer_Solution {
             while (true) {
                 synchronized (this) {
                     while (list.isEmpty()) {
+                    System.out.print("list is empty,\n \t");
+                    System.out.println(Thread.currentThread().getName() + " is waiting, size: " + list.size());
                         wait();
                     }
                     int val = list.removeFirst();
                     System.out.println("Consumer consumed=" + val);
                     notify();
-                   Thread.sleep(500);
+                   Thread.sleep(1000);
                 }
             }
         }
