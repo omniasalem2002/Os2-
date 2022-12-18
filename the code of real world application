@@ -1,0 +1,107 @@
+package javaapplication4;
+
+import java.util.LinkedList;
+
+public class Bakery_Management {
+
+    public static void main(String[] args) throws InterruptedException {
+        LinkedList<Integer> Bakery_store = new LinkedList<>();
+        int capacity = 4;
+        // final baker_customer pro_con = new baker_customer();
+        Producer runnable1 = new Producer(Bakery_store, capacity);
+        Consumer runnable2 = new Consumer(Bakery_store);
+
+        for (int i = 0; i <= 3; i++) {
+            Thread t1 = new Thread(runnable1);
+            t1.start();
+        }
+        for (int i = 0; i <= 3; i++) {
+            Thread t2 = new Thread(runnable2);
+            t2.start();
+        }
+
+    }
+}
+///////////////////////////////////////////////
+
+class Producer implements Runnable {
+
+    private final LinkedList<Integer> Bakery_store;
+    private final int capacity;
+
+    public Producer(LinkedList<Integer> sharedlist, int capacity) {
+        this.Bakery_store = sharedlist;
+        this.capacity = capacity;
+    }
+
+    @Override
+    public void run() {
+        int cakes = 0;
+        while (true) {
+            try {
+                procedure_baker(cakes++);
+            } 
+            catch (InterruptedException e) {
+                System.out.println("Interrupted Exception @ Producer Code");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void procedure_baker(int cakes) throws InterruptedException {
+        synchronized (Bakery_store) {
+            while (Bakery_store.size() == capacity) {
+                System.out.print("Bakery_store is full, \n\t");
+                Thread.currentThread().setName("Baker");
+                System.out.println(Thread.currentThread().getName() + " is waiting, size: " + Bakery_store.size());
+                Bakery_store.wait();
+            }
+            Thread.sleep(1000);
+            Bakery_store.add(cakes);// this is function that creat a new cake and put it in Bakery_store
+            System.out.println("baker  produced=" + cakes);
+            Bakery_store.notifyAll();
+
+        }
+
+    }
+}
+
+////////////////////////////
+class Consumer implements Runnable {
+
+    private final LinkedList<Integer> Bakery_store;
+
+    public Consumer(LinkedList<Integer> sharedlist) {
+        this.Bakery_store = sharedlist;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                procedure_customer();
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted Exception @ Consumer Code");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void procedure_customer() throws InterruptedException {
+
+        synchronized (Bakery_store) {
+            while (Bakery_store.isEmpty()) {
+                System.out.print("Bakery_store is empty,\n \t");
+                System.out.println(Thread.currentThread().getName() + " is waiting, size: " + Bakery_store.size());
+                Thread.currentThread().setName("customer");
+                Bakery_store.wait();
+            }
+            Thread.sleep(2000);
+            int val = Bakery_store.removeFirst();// this is function that take Cake From Bakery
+            System.out.println("customer buy cake number=" + val);
+            Bakery_store.notify();//this is function that wakeup baker
+
+        }
+
+    }
+}
